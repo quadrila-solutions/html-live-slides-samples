@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>3D Animation Slide</title>
+<style>
+  :root {
+    --mx: 0deg;
+    --my: 0deg;
+    --cyan: #64f5ff;
+    --blue: #6077ff;
+    --violet: #b35cff;
+    --pink: #ff4fa0;
+    --white: #f7fbff;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #050510;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  body {
+    display: grid;
+    place-items: center;
+  }
+
+  .slide {
+    position: relative;
+    width: min(100vw, calc(100vh * 16 / 9));
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    color: var(--white);
+    isolation: isolate;
+    background:
+      radial-gradient(circle at 73% 42%, rgba(99, 76, 255, .22), transparent 30%),
+      radial-gradient(circle at 35% 58%, rgba(0, 223, 255, .11), transparent 31%),
+      linear-gradient(135deg, #050611 0%, #0a0b20 45%, #090417 100%);
+  }
+
+  .slide::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -5;
+    opacity: .28;
+    background-image:
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size: 4.5% 8%;
+    mask-image: linear-gradient(to bottom, transparent, black 25%, black 75%, transparent);
+  }
+
+  .aurora {
+    position: absolute;
+    inset: -30%;
+    z-index: -4;
+    filter: blur(45px);
+    opacity: .45;
+    background: conic-gradient(from 180deg at 60% 45%, transparent 0deg, rgba(52,225,255,.22) 54deg, transparent 110deg, rgba(182,73,255,.2) 190deg, transparent 270deg, rgba(255,60,154,.15) 330deg, transparent 360deg);
+    animation: auroraSpin 18s linear infinite;
+  }
+
+  .noise {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    pointer-events: none;
+    opacity: .045;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+  }
+
+  .content {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 43% 57%;
+    align-items: center;
+    padding: 7.5% 7%;
+  }
+
+  .copy {
+    align-self: center;
+    transform: translateY(-2%);
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: .65em;
+    margin-bottom: 1.4em;
+    font-size: clamp(9px, .78vw, 15px);
+    font-weight: 700;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: #a8eaff;
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 2.4em;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--cyan), var(--violet));
+    box-shadow: 0 0 16px rgba(100,245,255,.8);
+  }
+
+  h1 {
+    margin: 0;
+    max-width: 8.5ch;
+    font-size: clamp(42px, 5.95vw, 112px);
+    line-height: .9;
+    letter-spacing: -.065em;
+    font-weight: 780;
+  }
+
+  h1 span {
+    display: block;
+    color: transparent;
+    background: linear-gradient(100deg, #ffffff 0%, #bff8ff 35%, #807cff 70%, #ef8cff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 8px 22px rgba(74,118,255,.18));
+  }
+
+  .subtitle {
+    max-width: 35em;
+    margin: 1.65em 0 0;
+    color: rgba(233,242,255,.68);
+    font-size: clamp(12px, 1.14vw, 21px);
+    line-height: 1.65;
+    letter-spacing: .005em;
+  }
+
+  .chips {
+    display: flex;
+    gap: .65em;
+    margin-top: 2em;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    padding: .68em 1em;
+    border: 1px solid rgba(155,224,255,.16);
+    border-radius: 999px;
+    color: rgba(226,243,255,.78);
+    background: rgba(255,255,255,.045);
+    box-shadow: inset 0 1px rgba(255,255,255,.07);
+    backdrop-filter: blur(12px);
+    font-size: clamp(9px, .72vw, 14px);
+    letter-spacing: .04em;
+  }
+
+  .scene-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    perspective: 1100px;
+    perspective-origin: 52% 45%;
+  }
+
+  .scene {
+    position: absolute;
+    left: 5%;
+    top: 3%;
+    width: 93%;
+    height: 92%;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--my)) rotateY(var(--mx));
+    transition: transform .18s ease-out;
+  }
+
+  .halo {
+    position: absolute;
+    left: 48%;
+    top: 47%;
+    width: 78%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) translateZ(-160px);
+    background: radial-gradient(circle, rgba(95,103,255,.18), rgba(85,230,255,.05) 38%, transparent 68%);
+    filter: blur(4px);
+  }
+
+  .orb {
+    position: absolute;
+    left: 49%;
+    top: 44%;
+    width: 31%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    transform-style: preserve-3d;
+    transform: translate(-50%, -50%) translateZ(120px);
+    background:
+      radial-gradient(circle at 31% 25%, #ffffff 0 2%, #a9fbff 4%, transparent 12%),
+      radial-gradient(circle at 34% 30%, #8cf9ff 0%, #4988ff 24%, #6231d5 53%, #160a42 78%, #060514 100%);
+    box-shadow:
+      inset -2.2vw -2.3vw 3.5vw rgba(0,0,0,.58),
+      inset 1.2vw 1vw 2.2vw rgba(255,255,255,.22),
+      0 0 4vw rgba(61,174,255,.32),
+      0 0 8vw rgba(111,53,255,.2);
+    animation: orbFloat 5.6s ease-in-out infinite;
+  }
+
+  .orb::before {
+    content: "";
+    position: absolute;
+    inset: 9%;
+    border-radius: 50%;
+    background:
+      repeating-radial-gradient(ellipse at 38% 40%, transparent 0 9%, rgba(190,252,255,.13) 10%, transparent 11% 17%),
+      repeating-linear-gradient(115deg, transparent 0 15%, rgba(255,255,255,.08) 16%, transparent 17% 25%);
+    mix-blend-mode: screen;
+    filter: blur(.4px);
+    animation: textureShift 9s linear infinite;
+  }
+
+  .orb::after {
+    content: "";
+    position: absolute;
+    left: 13%;
+    top: 8%;
+    width: 35%;
+    height: 19%;
+    border-radius: 50%;
+    transform: rotate(-28deg);
+    background: radial-gradient(ellipse, rgba(255,255,255,.72), rgba(204,251,255,.12) 58%, transparent 72%);
+    filter: blur(3px);
+  }
+
+  .orbit {
+    position: absolute;
+    left: 49%;
+    top: 44%;
+    width: 58%;
+    height: 24%;
+    border: clamp(1px, .14vw, 3px) solid rgba(128,240,255,.52);
+    border-left-color: rgba(208,103,255,.82);
+    border-right-color: rgba(78,111,255,.18);
+    border-radius: 50%;
+    transform-style: preserve-3d;
+    transform: translate(-50%, -50%) rotateX(67deg) rotateZ(-13deg) translateZ(155px);
+    box-shadow: 0 0 1.2vw rgba(92,219,255,.2), inset 0 0 1vw rgba(177,89,255,.18);
+    animation: orbitTurn 9s linear infinite;
+  }
+
+  .orbit::before,
+  .orbit::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 4.8%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #deffff;
+    box-shadow: 0 0 .7vw .25vw rgba(100,245,255,.7);
+  }
+
+  .orbit::before { left: 8%; }
+  .orbit::after { right: 11%; background: #f0aaff; box-shadow: 0 0 .7vw .25vw rgba(211,73,255,.62); }
+
+  .cube-anchor {
+    position: absolute;
+    right: 9%;
+    top: 17%;
+    width: 15%;
+    aspect-ratio: 1;
+    transform-style: preserve-3d;
+    animation: cubeFloat 7.2s ease-in-out infinite;
+  }
+
+  .cube {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    animation: cubeSpin 12s linear infinite;
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(220,250,255,.44);
+    background: linear-gradient(135deg, rgba(116,239,255,.19), rgba(116,72,255,.09));
+    box-shadow: inset 0 0 1.4vw rgba(112,230,255,.13), 0 0 .45vw rgba(92,190,255,.16);
+    backdrop-filter: blur(4px);
+  }
+
+  .front  { transform: translateZ(calc(var(--cube-depth) / 2)); }
+  .back   { transform: rotateY(180deg) translateZ(calc(var(--cube-depth) / 2)); }
+  .right  { transform: rotateY(90deg) translateZ(calc(var(--cube-depth) / 2)); }
+  .left   { transform: rotateY(-90deg) translateZ(calc(var(--cube-depth) / 2)); }
+  .top    { transform: rotateX(90deg) translateZ(calc(var(--cube-depth) / 2)); }
+  .bottom { transform: rotateX(-90deg) translateZ(calc(var(--cube-depth) / 2)); }
+  .cube { --cube-depth: clamp(54px, 7.2vw, 138px); }
+
+  .diamond {
+    position: absolute;
+    left: 18%;
+    bottom: 14%;
+    width: 12%;
+    aspect-ratio: 1;
+    transform-style: preserve-3d;
+    transform: rotate(45deg) translateZ(90px);
+    border: 1px solid rgba(255,255,255,.3);
+    background: linear-gradient(135deg, rgba(255,91,196,.5), rgba(92,84,255,.14) 55%, rgba(86,243,255,.35));
+    box-shadow: inset 0 0 1.5vw rgba(255,255,255,.13), 0 0 2vw rgba(210,64,255,.23);
+    backdrop-filter: blur(5px);
+    animation: diamondFloat 6.2s ease-in-out infinite;
+  }
+
+  .diamond::after {
+    content: "";
+    position: absolute;
+    inset: 17%;
+    border: 1px solid rgba(255,255,255,.28);
+    background: rgba(255,255,255,.04);
+  }
+
+  .floor {
+    position: absolute;
+    left: 48%;
+    bottom: -27%;
+    width: 115%;
+    height: 65%;
+    transform: translateX(-50%) rotateX(68deg) translateZ(-115px);
+    transform-origin: center top;
+    background-image:
+      linear-gradient(rgba(116,225,255,.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(116,225,255,.15) 1px, transparent 1px);
+    background-size: 6% 11%;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), transparent 78%);
+    filter: drop-shadow(0 0 .5vw rgba(88,215,255,.25));
+  }
+
+  .particle {
+    position: absolute;
+    width: clamp(2px, .22vw, 5px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #bdfaff;
+    box-shadow: 0 0 .6vw .12vw rgba(93,226,255,.72);
+    opacity: .5;
+    animation: particleDrift var(--d) ease-in-out infinite alternate;
+    animation-delay: var(--delay);
+  }
+
+  .corner {
+    position: absolute;
+    left: 7%;
+    bottom: 5%;
+    z-index: 7;
+    display: flex;
+    align-items: center;
+    gap: .8em;
+    color: rgba(190,211,232,.44);
+    font-size: clamp(8px, .66vw, 13px);
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+
+  .corner i {
+    width: .55em;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 .7em var(--cyan);
+    animation: blink 1.8s ease-in-out infinite;
+  }
+
+  @keyframes auroraSpin { to { transform: rotate(360deg) scale(1.08); } }
+  @keyframes orbFloat {
+    0%,100% { transform: translate(-50%, -50%) translateZ(120px) translateY(0) rotate(-2deg); }
+    50% { transform: translate(-50%, -50%) translateZ(145px) translateY(-4%) rotate(2deg); }
+  }
+  @keyframes textureShift { to { transform: rotate(360deg) scale(1.05); } }
+  @keyframes orbitTurn {
+    to { transform: translate(-50%, -50%) rotateX(67deg) rotateZ(347deg) translateZ(155px); }
+  }
+  @keyframes cubeSpin {
+    from { transform: rotateX(-21deg) rotateY(0deg) rotateZ(12deg); }
+    to { transform: rotateX(339deg) rotateY(360deg) rotateZ(12deg); }
+  }
+  @keyframes cubeFloat {
+    0%,100% { transform: translateY(0) translateZ(40px); }
+    50% { transform: translateY(-18%) translateZ(85px); }
+  }
+  @keyframes diamondFloat {
+    0%,100% { transform: rotate(45deg) translateY(0) translateZ(90px); }
+    50% { transform: rotate(225deg) translateY(-22%) translateZ(125px); }
+  }
+  @keyframes particleDrift {
+    from { transform: translate3d(-10px, 16px, 0) scale(.7); opacity: .18; }
+    to { transform: translate3d(18px, -24px, 80px) scale(1.35); opacity: .8; }
+  }
+  @keyframes blink { 50% { opacity: .3; transform: scale(.72); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-play-state: paused !important; }
+  }
+</style>
+</head>
+<body>
+<main class="slide" id="slide" aria-label="3D animation presentation slide">
+  <div class="aurora"></div>
+  <div class="noise"></div>
+
+  <section class="content">
+    <div class="copy">
+      <div class="eyebrow">Beyond the flat screen</div>
+      <h1>ENTER THE <span>THIRD DIMENSION</span></h1>
+      <p class="subtitle">Where motion, depth, and light converge to create experiences that feel alive.</p>
+      <div class="chips" aria-label="Key themes">
+        <span class="chip">Spatial motion</span>
+        <span class="chip">Real-time depth</span>
+        <span class="chip">Immersive design</span>
+      </div>
+    </div>
+
+    <div class="scene-wrap" aria-hidden="true">
+      <div class="scene" id="scene">
+        <div class="halo"></div>
+        <div class="floor"></div>
+        <div class="orbit"></div>
+        <div class="orb"></div>
+
+        <div class="cube-anchor">
+          <div class="cube">
+            <div class="face front"></div>
+            <div class="face back"></div>
+            <div class="face right"></div>
+            <div class="face left"></div>
+            <div class="face top"></div>
+            <div class="face bottom"></div>
+          </div>
+        </div>
+
+        <div class="diamond"></div>
+
+        <span class="particle" style="left:18%;top:23%;--d:4.7s;--delay:-1s"></span>
+        <span class="particle" style="left:31%;top:13%;--d:6.2s;--delay:-3s"></span>
+        <span class="particle" style="left:72%;top:10%;--d:5.4s;--delay:-2s"></span>
+        <span class="particle" style="left:86%;top:42%;--d:7.1s;--delay:-4s"></span>
+        <span class="particle" style="left:75%;top:72%;--d:5.8s;--delay:-1.5s"></span>
+        <span class="particle" style="left:38%;top:80%;--d:6.8s;--delay:-2.6s"></span>
+        <span class="particle" style="left:8%;top:60%;--d:5.1s;--delay:-.5s"></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="corner"><i></i> Interactive 3D motion</div>
+</main>
+
+<script>
+(() => {
+  const slide = document.getElementById('slide');
+  let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
+
+  function setTarget(clientX, clientY) {
+    const r = slide.getBoundingClientRect();
+    const x = (clientX - r.left) / r.width - 0.5;
+    const y = (clientY - r.top) / r.height - 0.5;
+    targetX = x * 7;
+    targetY = y * -5;
+  }
+
+  slide.addEventListener('pointermove', e => setTarget(e.clientX, e.clientY));
+  slide.addEventListener('pointerleave', () => { targetX = 0; targetY = 0; });
+
+  function animate() {
+    currentX += (targetX - currentX) * 0.065;
+    currentY += (targetY - currentY) * 0.065;
+    slide.style.setProperty('--mx', currentX.toFixed(2) + 'deg');
+    slide.style.setProperty('--my', currentY.toFixed(2) + 'deg');
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>
