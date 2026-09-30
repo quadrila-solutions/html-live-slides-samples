@@ -1,0 +1,32 @@
+{
+  "categories": [
+    { "id": "3d",          "name": "3D and motion" },
+    { "id": "interactive", "name": "Interactive" },
+    { "id": "data",        "name": "Data and charts" },
+    { "id": "process",     "name": "Process" }
+  ],
+
+  "samples": [
+    {
+      "id": "Sample1",
+      "name": "3d animation slide",
+      "desc": "3d animation slide",
+      "category": "3d",
+      "file": "html-samples/3d-animation-slide-object.html"
+    },
+    {
+      "id": "Sample2",
+      "name": "AI in Medicines",
+      "desc": "Three-slide pharma deck with donut chart.",
+      "category": "interactive",
+      "file": "html-samples/ai-in-medicines-3-slides.html"
+    },
+    {
+      "id": "Sample3",
+      "name": "Quarterly sales dashboard",
+      "desc": "Filter sample CSV data by quarter and region.",
+      "category": "data",
+      "file": "html-samples/csv-dashboard.html"
+    }
+  ]
+}
